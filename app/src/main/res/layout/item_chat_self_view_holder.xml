@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="4dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    android:layout_marginStart="84dp">
+
+    <TextView
+        android:layout_alignParentEnd="true"
+        android:padding="16dp"
+        tools:text="asdasdasdaskjhfjjscvhkackaskjvkdnkvanskncjkasjkasnkdas"
+        android:id="@+id/itemChatSelfText"
+        android:background="@drawable/bg_chat_self"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+</RelativeLayout>

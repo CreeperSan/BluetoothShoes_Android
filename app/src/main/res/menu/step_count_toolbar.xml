@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="最近7天"
+        android:id="@+id/menuStepCount7"/>
+    <item android:title="最近30天"
+        android:id="@+id/menuStepCount30"/>
+    <item android:title="最近190天"
+        android:id="@+id/menuStepCount90"/>
+
+</menu>

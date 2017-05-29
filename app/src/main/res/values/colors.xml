@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="colorSportTab">#F57800</color>
+    <color name="colorSocialTab">#2293F4</color>
+    <color name="colorMeTab">#00776A</color>
+
+    <color name="alpha">#00ffffff</color>
+
+    <color name="grayLittle">#f0f0f0</color>
+
+    <color name="meFragmentItemBackground">#ffffff</color>
+    <color name="sportFragmentDaysBackgroundColor">#f0f0f0</color>
+    <color name="sportFragmentDaysProgressColor">#FF4081</color>
+</resources>

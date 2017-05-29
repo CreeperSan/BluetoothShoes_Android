@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="196dp">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="196dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/user_background" />
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/userToolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize" />
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/userHeadCardView"
+            android:layout_width="78dp"
+            android:layout_height="78dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_margin="22dp">
+
+            <ImageView
+                android:id="@+id/userHeadImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_person_gray_24dp" />
+        </android.support.v7.widget.CardView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/userHeadCardView"
+            android:layout_alignTop="@id/userHeadCardView"
+            android:layout_toEndOf="@id/userHeadCardView"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/userNickName"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center|start"
+                tools:text="KiraStar的Mvv"
+                android:textColor="#ffffff"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/userUserName"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="top|start"
+                tools:text="\@KiraStarMvv"
+                android:textColor="#ffffff" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/userInfoList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+</LinearLayout>

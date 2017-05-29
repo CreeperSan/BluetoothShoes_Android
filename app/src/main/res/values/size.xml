@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="sizeSportFragmentDayMargin">2dp</dimen>
+    <dimen name="sizeSportFragmentDaySize">32dp</dimen>
+
+
+</resources>

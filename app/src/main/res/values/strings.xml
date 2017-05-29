@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">保健鞋</string>
+    <string name="about" formatted="false">
+        \n
+        \n
+        \n
+        保健鞋\n
+        \n
+        Alpha 2.0\n
+        \n
+        \n
+        感谢\n
+        \n
+        Android SDK - Google.Inc\n
+        https://www.google.com/\n
+        \n
+        Butter Knife - JakeWharton\n
+        http://jakewharton.github.io/butterknife/\n
+        \n
+        DashboardView - SuperKung\n
+        https://github.com/SuperKung/DashboardView\n
+        \n
+        MPAndroidChart - PhilJay\n
+        https://github.com/PhilJay/MPAndroidChart\n
+        \n
+        Volley - Google.Inc\n
+        https://www.google.com/\n
+        \n
+        HoloCircularProgressBar - jamesmontemagno\n
+        https://github.com/jamesmontemagno/MonoDroidToolkit/wiki/HoloCircularProgressBar\n
+        \n
+        Tornado - Facebook , Bret Taylor\n
+        http://www.tornadoweb.org/\n
+    </string>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:title="更改个人资料"
+        android:icon="@drawable/ic_contacts_white_24dp"
+        android:id="@+id/menuUserUpdateProfile"
+        android:visible="false"
+        app:showAsAction="always"/>
+
+    <item android:title="交流"
+        android:id="@+id/menuUserChat"
+        android:icon="@drawable/ic_forum_white_24dp"
+        android:visible="false"
+        app:showAsAction="always"/>
+</menu>

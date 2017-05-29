@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="连接"
+        android:id="@+id/menuMainConnectShoes"/>
+    <item android:title="设定服务器地址"
+        android:id="@+id/menuMainServerAddress"/>
+    <item android:title="找回我的鞋子"
+        android:id="@+id/menuMainFindShoes"/>
+</menu>

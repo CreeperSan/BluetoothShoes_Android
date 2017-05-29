@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group>
+        <item android:title="消息"
+            android:id="@+id/meNavigationMessage"/>
+    </group>
+
+    <group android:id="@+id/meNavigationCountGroup" >
+        <item android:title="步数"
+            android:id="@+id/meNavigationStep"/>
+        <item android:title="体重"
+            android:id="@+id/meNavigationWeight"/>
+    </group>
+
+    <group>
+        <item android:title="身体质量指数"
+            android:id="@+id/meNavigationBMI"/>
+    </group>
+
+    <group android:id="@+id/meNavigationSettingGroup" >
+        <item android:title="设置"
+            android:id="@+id/meNavigationSetting"/>
+        <item android:title="关于"
+            android:id="@+id/meNavigationAbout"/>
+    </group>
+</menu>

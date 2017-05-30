@@ -5,11 +5,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
-
-import com.anderson.dashboardview.view.DashboardView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -18,12 +17,13 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import creeper_san.myshoes.base.BaseFragment;
 import creeper_san.myshoes.event.HumidityEvent;
+import creeper_san.myshoes.event.TempConfigEvent;
+import creeper_san.myshoes.event.TempConfigResultEvent;
 import creeper_san.myshoes.event.TemperatureEvent;
+import creeper_san.myshoes.event.WarmEvent;
 import creeper_san.myshoes.view.Thermometer;
 
 public class MainTemperatureFragment extends BaseFragment {
-    @BindView(R.id.mainTemperatureMeter)
-    DashboardView mainTemperatureMeter;
     @BindView(R.id.mainTemperaturePowerSwitch)
     Switch mainTemperaturePowerSwitch;
     @BindView(R.id.mainTemperatureHintText)
@@ -32,12 +32,12 @@ public class MainTemperatureFragment extends BaseFragment {
     SeekBar seekBar;
     @BindView(R.id.mainTemperatureThermometer)
     Thermometer thermometer;
-    @BindView(R.id.mainTemperatureSuggestionText)
-    TextView suggestionText;
     @BindView(R.id.mainTemperatureHumidityText)
     TextView humidityText;
     @BindView(R.id.mainTemperatureTempText)
     TextView tempText;
+    @BindView(R.id.mainTemperatureTempLayout)
+    LinearLayout linearLayout;
 
 
     private OnSeekResultListener listener;
@@ -52,9 +52,7 @@ public class MainTemperatureFragment extends BaseFragment {
         mainTemperaturePowerSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (listener!=null){
-                    listener.onSwitch(isChecked);
-                }
+                setSwitch(isChecked);
             }
         });
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -63,21 +61,17 @@ public class MainTemperatureFragment extends BaseFragment {
                 hintText.setText((progress+15)+"℃");
             }
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
+            public void onStartTrackingTouch(SeekBar seekBar) {}
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                if (listener!=null){
-                    listener.onResult(seekBar);
-                }
+                postEvent(new WarmEvent(mainTemperaturePowerSwitch.isChecked(),seekBar.getProgress()));
             }
         });
+
+        postStickyEvent(new TempConfigEvent());
     }
 
-    public OnSeekResultListener getListener() {
-        return listener;
-    }
+
     public void setSwitchState(boolean isOn){
         if (isOn){
             mainTemperaturePowerSwitch.setChecked(true);
@@ -93,20 +87,17 @@ public class MainTemperatureFragment extends BaseFragment {
     public void setHumidity(int humidity){
         humidityText.setText(humidity+"%");
     }
-    public void setSuggestion(String content){
-        suggestionText.setText(content);
-    }
 
-    public void setListener(OnSeekResultListener listener) {
-        this.listener = listener;
-    }
-
-    public void setTemperature(int temperature){
-        mainTemperatureMeter.setPercent(temperature*2);
-    }
 
     public void setSwitch(boolean state){
         mainTemperaturePowerSwitch.setChecked(state);
+        if (state){
+            postEvent(new WarmEvent(true,-100));
+            linearLayout.setVisibility(View.VISIBLE);
+        }else {
+            postEvent(new WarmEvent(false,-100));
+            linearLayout.setVisibility(View.GONE);
+        }
     }
 
     public void setSeekBarProgress(int progress){
@@ -126,12 +117,17 @@ public class MainTemperatureFragment extends BaseFragment {
     public void onHumidityEvent(HumidityEvent event){
         humidityText.setText(event.getHumidity()+"%");
     }
+    @Subscribe()
+    public void onTempConfigResultEvent(TempConfigResultEvent event){
+        log("收到回调 "+event.isState()+" "+event.getTemp());
+        mainTemperaturePowerSwitch.setChecked(event.isState());
+        seekBar.setProgress(event.getTemp());
+    }
 
     /**
      *      一些接口
      */
     interface OnSeekResultListener{
         public void onResult(SeekBar seekBar);
-        public void onSwitch(boolean isChecked);
     }
 }

@@ -9,17 +9,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.widget.RemoteViews;
-import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -35,6 +31,7 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,19 +53,29 @@ import creeper_san.myshoes.event.LedEvent;
 import creeper_san.myshoes.event.LedResultEvent;
 import creeper_san.myshoes.event.MissingEvent;
 import creeper_san.myshoes.event.MissingResultEvent;
+import creeper_san.myshoes.event.NetworkEvent;
 import creeper_san.myshoes.event.ShoesEvent;
+import creeper_san.myshoes.event.TempConfigEvent;
+import creeper_san.myshoes.event.TempConfigResultEvent;
 import creeper_san.myshoes.event.TemperatureEvent;
 import creeper_san.myshoes.event.VibrateEvent;
 import creeper_san.myshoes.event.VibrateResultEvent;
 import creeper_san.myshoes.event.WarmEvent;
 import creeper_san.myshoes.event.WarmResultEvent;
+import creeper_san.myshoes.event.WeatherEvent;
+import creeper_san.myshoes.event.WeatherResultEvent;
+import creeper_san.myshoes.event.WeightDataEvent;
+import creeper_san.myshoes.event.WeightDataResultEvent;
 import creeper_san.myshoes.event.WeightEvent;
 import creeper_san.myshoes.flag.BroadcastKey;
 import creeper_san.myshoes.flag.ServerKey;
 import creeper_san.myshoes.helper.ChatDatabaseHelper;
 import creeper_san.myshoes.helper.ConfigPrefHelper;
 import creeper_san.myshoes.helper.ConnectionHelper;
+import creeper_san.myshoes.helper.NetworkHelper;
+import creeper_san.myshoes.helper.UrlHelper;
 import creeper_san.myshoes.helper.UserDatabaseHelper;
+import creeper_san.myshoes.helper.WeatherHelper;
 
 public class ShoesService extends Service implements ConnectionHelper.MessageListener,ConnectionHelper.OnConnectionChangeListener{
     public String TAG = getClass().getSimpleName();
@@ -76,7 +83,6 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
     private final int NOTIFICATION_MESSAGE_ID = 2;
 
     private Context context = this;
-//    private RemoteViews remoteViews;
     private ConnectionHelper connectionHelper;
     private ConfigPrefHelper configHelper;
     private RequestQueue requestQueue;
@@ -94,8 +100,8 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
     private int mHumidity = 0;
     private float mWeight = 0f;
     private boolean isNeedFresh = false;//是否需要刷新数据
-    private boolean isAutoWarm = false; //是否自动保温
-    private int userTemperature = 25;   //自动调节温度下限
+//    private boolean isAutoWarm = false; //是否自动保温
+//    private int userTemperature = 25;   //自动调节温度下限
     private boolean isLogin = false;    //是否已登录
     private String userName = "";   //用户名
     private String nickName = "";   //昵称
@@ -121,13 +127,80 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
 
 
     //新的
+    private boolean warmStatus = false;//是否需要保温
+    private boolean isWarming = false;//是否正在加热
+    private int warmValue = 25;//温度阈值
     private boolean isMissing = false;
     private int ledStatus = LedEvent.Companion.getSTATUS_OFF();
     private boolean buzzerStatus = false;
-    private boolean warmStatus = false;
     private GetShoesInfoThread shoesInfoThread;
     private boolean isBluetoothConnect = false;
+    private boolean isWeightOverValue = false;
 
+    /**
+     *      收到消息
+     */
+    @Override
+    public void onMessageReceive(String msg) {
+        recBuffer.append(msg);
+        String tempStr = recBuffer.toString();
+        if (tempStr.contains("<") && tempStr.contains(">")){
+            int start = tempStr.lastIndexOf("<")+1;
+            int end = tempStr.lastIndexOf(">");
+            if (end<recBuffer.length() && end>start){
+                String receive = tempStr.substring(start,end);
+                recBuffer = new StringBuffer(recBuffer.substring(end+1));
+                String humidityStr = receive.substring(0,3);
+                String temperatureStr = receive.substring(4,7);
+                String weightStr = receive.substring(8,13);
+                handleTemperatureData(temperatureStr,humidityStr);
+                handleWeightData(weightStr);
+//                log("收到的消息为 "+receive+" 湿度是"+humidityStr+" 温度是"+mTemperature+"  体重是"+weightStr);
+
+                //处理体重60800 -  65520
+                mWeight = handleWeight(weightStr);
+                //发送消息
+                postEvent(new HumidityEvent(mHumidity));
+                postEvent(new TemperatureEvent(mTemperature));
+                postEvent(new WeightEvent(mWeight));
+            }
+        }
+    }
+    private int handleWeight(String str){
+        //处理体重60800 -  65520
+        float weightTemp = Float.valueOf(str);
+        float weight60 = 65520 - 60800;
+        weightTemp -= 60800;
+        if (weightTemp<0){
+            weightTemp = 0;
+        }
+        float unit = 60/weight60;
+        int weight = (int) (unit*weightTemp);
+        if (weight>30){
+            isWeightOverValue = true;
+        }else {
+            if (isWeightOverValue){
+                isWeightOverValue = false;
+                int[] tempDate = getThisDate();
+                if (tempDate[0] == configHelper.getStepYear() &&
+                        tempDate[1] == configHelper.getStepMonth() &&
+                        tempDate[2] == configHelper.getStepDay()){
+                    mStep++;
+                }else {
+                    //把昨天数据存储到数据库
+                    userDatabaseHelper.insertDataSteps(tempDate[0],tempDate[1],tempDate[2],configHelper.getStepNumber());
+                    //设置今天数据
+                    configHelper.setStepYear(tempDate[0]);
+                    configHelper.setStepMonth(tempDate[1]);
+                    configHelper.setStepDay(tempDate[2]);
+                    mStep = 1;
+                }
+                configHelper.setStepNumber(mStep);
+                notifyStepReceiver(mStep);
+            }
+        }
+        return weight;
+    }
     /**
      *      EventBus事件类
      */
@@ -207,23 +280,9 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
     }
     @Subscribe()
     public void onWarmEvent(WarmEvent event){
-        if (isConnected()){
-            Runnable runnable = new Runnable() {
-                private boolean tempWarmStatus = warmStatus;
-                @Override
-                public void run() {
-                    warmStatus = tempWarmStatus;
-                    postEvent(new WarmResultEvent(false,warmStatus));
-                }
-            };
-            warmStatus = event.getStatus();
-            if (event.getStatus()){
-                connectionHelper.send("4",runnable);
-            }else {
-                connectionHelper.send("5",runnable);
-            }
-        }else {
-            postEvent(new WarmResultEvent(false,warmStatus));
+        configHelper.setAutoWarm(event.getStatus());
+        if (event.getTemperature()>0){
+            configHelper.setTemp(event.getTemperature());
         }
     }
     @Subscribe()
@@ -250,6 +309,49 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
             connectionHelper.send("0");
         }
     }
+    @Subscribe(sticky = true)
+    public void onNetworkEvent(NetworkEvent event){
+        loge("收到网络请求");
+        NetworkHelper.INSTANCE.request(requestQueue,event.getUrl(),event.getHandler());
+        //删除粘滞事件
+        EventBus.getDefault().removeStickyEvent(NetworkEvent.class);
+    }
+    @Subscribe()
+    public void onWeatherEvent(WeatherEvent event){
+        if (event.isRequest()){
+//            log("收到请求");
+            long currentTimeStamp = System.currentTimeMillis();
+            if ((currentTimeStamp - WeatherHelper.getTimeStamp())<(1000*60*60)){//如果距离上一次请求还不到1小时，则无视
+                return;
+            }
+            NetworkHelper.INSTANCE.request(requestQueue, UrlHelper.generateNowUrl("shenzhen"), new NetworkHelper.NetworkHandler() {
+                @Override
+                public void onResponse(boolean isSuccess, @NotNull String response) {
+                    if (isSuccess){
+                        postEvent(new WeatherResultEvent(false));
+                    }else {
+                        WeatherHelper.setNowJson(response);
+                        postEvent(new WeatherResultEvent(true));
+                    }
+                }
+            });
+        }else {
+            if (WeatherHelper.getTimeStamp()!=0 && WeatherHelper.getJson()!=null){
+                postEvent(new WeatherResultEvent(true));
+            }
+        }
+    }
+    @Subscribe(sticky = true)
+    public void onTempConfigEvent(TempConfigEvent event){
+        postEvent(new TempConfigResultEvent(configHelper.getIsAutoWarm(),configHelper.getTemp()));
+        //删除粘滞事件
+        EventBus.getDefault().removeStickyEvent(TempConfigEvent.class);
+    }
+    @Subscribe(sticky = true)
+    public void onWeightDataEvent(WeightDataEvent event){
+        postEvent(new WeightDataResultEvent(userDatabaseHelper.getWeightList(20)));
+        EventBus.getDefault().removeStickyEvent(event.getClass());
+    }
 
     /**
      *      状态获取
@@ -267,32 +369,6 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
         return warmStatus;
     }
 
-    /**
-     *      收到消息
-     */
-    @Override
-    public void onMessageReceive(String msg) {
-        recBuffer.append(msg);
-        String tempStr = recBuffer.toString();
-        if (tempStr.contains("<") && tempStr.contains(">")){
-            int start = tempStr.lastIndexOf("<")+1;
-            int end = tempStr.lastIndexOf(">");
-            if (end<recBuffer.length() && end>start){
-                String receive = tempStr.substring(start,end);
-                recBuffer = new StringBuffer(recBuffer.substring(end+1));
-                String humidityStr = receive.substring(0,3);
-                String temperatureStr = receive.substring(4,7);
-                String weightStr = receive.substring(8,13);
-                handleTemperatureData(temperatureStr,humidityStr);
-                handleWeightData(weightStr);
-                log("收到的消息为 "+receive+" 湿度是"+humidityStr+" 温度是"+mTemperature+"  体重是"+mWeight);
-                //发送消息
-                postEvent(new HumidityEvent(mHumidity));
-                postEvent(new TemperatureEvent(mTemperature));
-                postEvent(new WeightEvent(mWeight));
-            }
-        }
-    }
 
     /**
      *      蓝牙连接状态监听
@@ -306,7 +382,9 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
     @Override
     public void onDisconnect() {
         isBluetoothConnect = false;
-        shoesInfoThread.interrupt();
+        if(shoesInfoThread!=null){
+            shoesInfoThread.interrupt();
+        }
         shoesInfoThread = null;
     }
 
@@ -362,8 +440,7 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
                 temperature = (int) (configHelper.getTemp()+
                                         ((random.nextBoolean())?(configHelper.getTempOffset()*(random.nextInt(8)-4))*0.125f:0));
             }
-            mTemperature = (int) temperature;
-//            notifyTemperatureReceiver((int) mTemperature);
+            mTemperature = temperature;
             checkIsNeedWarming();
             //湿度
             mHumidity = Integer.valueOf(humidityStr);
@@ -416,8 +493,8 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
         connectionHelper = new ConnectionHelper(this,this);
         connectionHelper.setMessageListener(this);
         configHelper = new ConfigPrefHelper(this);
-        isAutoWarm = configHelper.getIsAutoWarm();
-        userTemperature = configHelper.getUserTemperature();
+        warmStatus = configHelper.getIsAutoWarm();
+        warmValue = configHelper.getUserTemperature();
         userDatabaseHelper = new UserDatabaseHelper(context);
         requestQueue = Volley.newRequestQueue(this);
         getMessageThread = new GetMessageThread();
@@ -743,7 +820,6 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
         requestQueue.add(request);
     }
     public void sendMessage(final String toUserName, final String content, final OnInterServerResultListener listener){
-
         String ipAddress = "http://"+configHelper.getServerAddress()+":8080";
         StringRequest request = new StringRequest(Request.Method.POST, ipAddress
                 , new Response.Listener<String>() {
@@ -804,20 +880,20 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
     public int getUserTemperature(){
         return configHelper.getUserTemperature();
     }
-    public void setUserTemperature(int temperature){
-        userTemperature = temperature;
-        configHelper.setUserTemperature(temperature);
-    }
+//    public void setUserTemperature(int temperature){
+//        userTemperature = temperature;
+//        configHelper.setUserTemperature(temperature);
+//    }
     public boolean isAutoWarm(){
         return configHelper.getIsAutoWarm();
     }
-    public void setAutoWarm(boolean state){
-        isAutoWarm = state;
-        if (!state){
-            stopWarm();
-        }
-        configHelper.setAutoWarm(state);
-    }
+//    public void setAutoWarm(boolean state){
+//        isAutoWarm = state;
+//        if (!state){
+//            stopWarm();
+//        }
+//        configHelper.setAutoWarm(state);
+//    }
     public boolean getIsAutoLogin(){
         return configHelper.getAutoLogin();
     }
@@ -990,11 +1066,17 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
 
 
     private void checkIsNeedWarming() {
-        if (isAutoWarm){
-            if (mTemperature>userTemperature+15){//不需要加热
-                stopWarm();
+        if (warmStatus){
+            if (mTemperature>warmValue+15){//不需要加热
+                if (isWarming){
+                    stopWarm();
+                    isWarming = false;
+                }
             }else {//需要加热
-                setWarm();
+                if (!isWarming){
+                    setWarm();
+                    isWarming = true;
+                }
             }
         }
     }

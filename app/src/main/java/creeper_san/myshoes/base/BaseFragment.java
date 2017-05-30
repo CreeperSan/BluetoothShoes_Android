@@ -15,6 +15,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.ButterKnife;
+import creeper_san.myshoes.event.WeatherEvent;
 
 
 public abstract class BaseFragment extends Fragment {
@@ -52,6 +53,9 @@ public abstract class BaseFragment extends Fragment {
     public <T> void postEvent(T event){
         EventBus.getDefault().post(event);
     }
+    public <T> void postStickyEvent(T event){
+        EventBus.getDefault().postSticky(event);
+    }
 
     protected void onViewInflate(){}
 
@@ -68,7 +72,7 @@ public abstract class BaseFragment extends Fragment {
     }
 
     protected void initSelf() {
-
+        postEvent(new WeatherEvent(true));
     }
 
     protected void onViewCreated(){

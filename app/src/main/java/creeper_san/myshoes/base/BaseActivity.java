@@ -53,6 +53,9 @@ public abstract class BaseActivity extends AppCompatActivity {
     public <T> void postEvent(T event){
         EventBus.getDefault().post(event);
     }
+    public <T> void postStickyEvent(T event){
+        EventBus.getDefault().postSticky(event);
+    }
 
     @Override
     protected void onDestroy() {

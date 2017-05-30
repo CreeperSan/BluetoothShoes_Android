@@ -42,12 +42,12 @@
                     android:layout_height="wrap_content" />
             </LinearLayout>
         </FrameLayout>
-
         <LinearLayout
             android:layout_marginTop="16dp"
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:baselineAligned="true">
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_weight="1"
@@ -87,5 +87,135 @@
                     android:layout_height="wrap_content" />
             </LinearLayout>
         </LinearLayout>
+        <android.support.v7.widget.CardView
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <GridLayout
+                android:id="@+id/stepFragmentGrid"
+                android:paddingTop="8dp"
+                android:columnCount="2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_columnWeight="1"
+                    android:layout_margin="8dp"
+                    android:layout_gravity="start"
+                    android:text="天气"/>
+                <TextView
+                    android:id="@+id/stepFragmentWeather"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="8dp"
+                    android:layout_gravity="end"
+                    android:text="-"/>
+                <TextView
+                    android:clickable="true"
+                    android:id="@+id/stepFragmentAQIT"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="8dp"
+                    android:layout_gravity="start"
+                    android:text="空气污染指数"/>
+                <TextView
+                    android:id="@+id/stepFragmentAQI"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="8dp"
+                    android:layout_gravity="end"
+                    android:text="-"/>
+                <TextView
+                    android:layout_columnWeight="1"
+                    android:layout_margin="8dp"
+                    android:layout_gravity="start"
+                    android:text="PM2.5"/>
+                <TextView
+                    android:id="@+id/stepFragmentPM25"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="8dp"
+                    android:layout_gravity="end"
+                    android:text="-"/>
+                <ImageView
+                    android:src="#e0e0e0"
+                    android:layout_columnSpan="2"
+                    android:layout_height="1dp"
+                    android:layout_width="match_parent"/>
+                <TextView
+                    android:id="@+id/stepFragmentTravT"
+                    android:text="出行指数"
+                    android:layout_columnSpan="2"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="8dp"/>
+                <TextView
+                    android:id="@+id/stepFragmentTrav"
+                    android:text="-"
+                    android:layout_columnSpan="2"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="4dp"/>
+                <TextView
+                    android:id="@+id/stepFragmentSportT"
+                    android:text="运动建议"
+                    android:layout_columnSpan="2"
+                    android:layout_margin="8dp"/>
+                <TextView
+                    android:id="@+id/stepFragmentSport"
+                    android:text="-"
+                    android:layout_columnSpan="2"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="4dp"/>
+                <TextView
+                    android:id="@+id/stepFragmentUvT"
+                    android:text="紫外线指数"
+                    android:layout_columnSpan="2"
+                    android:layout_margin="8dp"/>
+                <TextView
+                    android:id="@+id/stepFragmentUv"
+                    android:text="-"
+                    android:layout_columnSpan="2"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="4dp"/>
+                <TextView
+                    android:id="@+id/stepFragmentDrsgT"
+                    android:text="穿衣指数"
+                    android:layout_columnSpan="2"
+                    android:layout_margin="8dp"/>
+                <TextView
+                    android:id="@+id/stepFragmentDrsg"
+                    android:text="-"
+                    android:layout_columnSpan="2"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="4dp"/>
+            </GridLayout>
+            <LinearLayout
+                android:id="@+id/stepFragmentLoading"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ProgressBar
+                    android:id="@+id/stepFragmentLoadingProgress"
+                    android:layout_margin="16dp"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+                <TextView
+                    android:id="@+id/stepFragmentLoadingTextView"
+                    android:text="正在加载天气状况"
+                    android:layout_gravity="bottom|center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+        </android.support.v7.widget.CardView>
     </LinearLayout>
 </ScrollView>

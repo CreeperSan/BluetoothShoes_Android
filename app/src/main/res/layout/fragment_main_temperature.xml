@@ -24,7 +24,7 @@
             <TextView
                 android:layout_marginStart="14dp"
                 android:id="@+id/mainTemperatureTempText"
-                android:text="25℃"
+                android:text="-"
                 android:textSize="48sp"
                 android:layout_marginTop="32dp"
                 android:layout_width="wrap_content"
@@ -33,39 +33,12 @@
                 android:layout_marginStart="16dp"
                 android:id="@+id/mainTemperatureHumidityText"
                 android:layout_marginTop="8dp"
-                android:text="28%"
+                android:text="-"
                 android:textSize="36sp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </LinearLayout>
     </LinearLayout>
-
-
-    <com.anderson.dashboardview.view.DashboardView
-        android:visibility="gone"
-        android:id="@+id/mainTemperatureMeter"
-        android:layout_gravity="center"
-        app:maxNumber="50"
-        android:text="当前温度"
-        app:startProgressColor="#66ccff"
-        app:endProgressColor="#ff9999"
-        app:startNumber="0"
-        app:unit="℃"
-        android:layout_width="224dp"
-        android:layout_height="224dp" />
-
-
-    <android.support.v7.widget.CardView
-        android:layout_margin="4dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <TextView
-            android:id="@+id/mainTemperatureSuggestionText"
-            android:layout_margin="16dp"
-            android:text="气温不错，要不去跑个步？"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
         android:layout_margin="4dp"
@@ -101,6 +74,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
             <LinearLayout
+                android:id="@+id/mainTemperatureTempLayout"
                 android:padding="16dp"
                 android:orientation="horizontal"
                 android:layout_below="@id/mainTemperatureCardDiver"

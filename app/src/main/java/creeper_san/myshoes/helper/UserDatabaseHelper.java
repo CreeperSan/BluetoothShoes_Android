@@ -6,6 +6,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import creeper_san.myshoes.MainWeightFragment;
+
 public class UserDatabaseHelper {
     private final static String NAME_DATABASE = "Step.db";
     private final static String NAME_TABLE_STEP = "Step";
@@ -32,6 +37,23 @@ public class UserDatabaseHelper {
                 + COLUMN_DAY + " INTEGER NOT NULL ,"
                 + COLUM_WEIGHT + " INTEGER NOT NULL "
                 +")");
+    }
+
+    public List<MainWeightFragment.Item> getWeightList(int count){
+        List<MainWeightFragment.Item> itemList = new ArrayList<>();
+        Cursor cursor = stepDatabase.query(NAME_WEIGHT_STEP,null,null,null,null,null,null,String.valueOf(count));
+        while (cursor.moveToNext()){
+            int year = cursor.getInt(cursor.getColumnIndex(COLUMN_YEAR));
+            int month = cursor.getInt(cursor.getColumnIndex(COLUMN_MONTH));
+            int day = cursor.getInt(cursor.getColumnIndex(COLUMN_DAY));
+            int weight = cursor.getInt(cursor.getColumnIndex(COLUM_WEIGHT));
+            MainWeightFragment.Item item = new MainWeightFragment.Item(year,month,day,weight);
+            itemList.add(item);
+            log("1个");
+        }
+        cursor.close();
+        log("大小 "+itemList.size());
+        return itemList;
     }
 
     public int getDataSteps(int year,int month,int day){

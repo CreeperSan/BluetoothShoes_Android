@@ -34,6 +34,7 @@ import android.widget.TextView;
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.ashokvarma.bottomnavigation.BottomNavigationItem;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,8 +46,12 @@ import butterknife.BindView;
 import creeper_san.myshoes.base.BaseActivity;
 import creeper_san.myshoes.base.BaseFragment;
 import creeper_san.myshoes.bean.SocialBean;
+import creeper_san.myshoes.event.NetworkEvent;
+import creeper_san.myshoes.event.WeightDataEvent;
 import creeper_san.myshoes.flag.BroadcastKey;
 import creeper_san.myshoes.flag.IntentKey;
+import creeper_san.myshoes.helper.NetworkHelper;
+import creeper_san.myshoes.helper.UrlHelper;
 
 public class MainActivity extends BaseActivity implements BottomNavigationBar.OnTabSelectedListener, ServiceConnection {
     @BindView(R.id.mainBottomNavigationView)BottomNavigationBar bottomNavigationBar;
@@ -173,7 +178,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationBar.On
         //添加Tab标签
         bottomNavigationBar
                 .addItem(new BottomNavigationItem(R.drawable.ic_directions_walk_black_24dp,"计步"))
-                .addItem(new BottomNavigationItem(R.drawable.ic_temperature_icon,"温度"))
+                .addItem(new BottomNavigationItem(R.drawable.ic_temperature_icon,"环境"))
                 .addItem(new BottomNavigationItem(R.drawable.ic_vibrate,"按摩"))
                 .addItem(new BottomNavigationItem(R.drawable.ic_weight_icon,"称重"))
                 .addItem(new BottomNavigationItem(R.drawable.ic_toys_black_24dp,"社区"))
@@ -286,23 +291,6 @@ public class MainActivity extends BaseActivity implements BottomNavigationBar.On
         });
         //=============================  温度  ===================================================
         temperatureFragment = new MainTemperatureFragment();
-        temperatureFragment.setListener(new MainTemperatureFragment.OnSeekResultListener() {
-            @Override
-            public void onResult(SeekBar seekBar) {
-                if (shoesService==null){
-                    return;
-                }
-                shoesService.setUserTemperature(seekBar.getProgress());
-            }
-
-            @Override
-            public void onSwitch(boolean isChecked) {
-                if (shoesService==null){
-                    return;
-                }
-                shoesService.setAutoWarm(true);
-            }
-        });
         //=============================  振动  ===================================================
         vibrationFragment = new MainVibrationFragment();
         vibrationFragment.setListener(new MainVibrationFragment.OnVibrationChangeListener() {
@@ -373,6 +361,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationBar.On
                         if (shoesService!=null){
                             if (shoesService.isConnected()){
                                 shoesService.insertDataWeightNum((int) weightTemp);
+                                postStickyEvent(new WeightDataEvent());
                             }else {
                                 toast("请先连接上鞋子哈");
                             }
@@ -632,16 +621,13 @@ public class MainActivity extends BaseActivity implements BottomNavigationBar.On
         if (position==4){// 此处为刷新社交信息
             freshSocialContent();
         }
-        if (position == 1){
-            temperatureFragment.setTemperature((float) (Math.random()*50));
-        }
-        if (shoesService!=null){
-            if (shoesService.isConnected()){
-                if (position == 1){
-                    shoesService.setCallFromContract();
-                }
-            }
-        }
+//        if (shoesService!=null){
+//            if (shoesService.isConnected()){
+//                if (position == 1){
+//                    shoesService.setCallFromContract();
+//                }
+//            }
+//        }
     }//标签重复选中
 
     /**
@@ -652,8 +638,8 @@ public class MainActivity extends BaseActivity implements BottomNavigationBar.On
         shoesService = ((ShoesService.ShoesServerBinder)binder).getService();
         //刷新
         setVibrate(shoesService.getVibrateLevel());
-        temperatureFragment.setSwitch(shoesService.isAutoWarm());
-        temperatureFragment.setSeekBarProgress(shoesService.getUserTemperature());
+        temperatureFragment.setSwitch(shoesService.isAutoWarm() );
+//        temperatureFragment.setSeekBarProgress(shoesService.getUserTemperature());
         shoesService.setNeedFresh(true);//提醒服务需要发送广播
         setUserData();//更新头像
         //刷新社区信息

@@ -51,6 +51,7 @@ import creeper_san.myshoes.event.WeightDataEvent;
 import creeper_san.myshoes.flag.BroadcastKey;
 import creeper_san.myshoes.flag.IntentKey;
 import creeper_san.myshoes.helper.NetworkHelper;
+import creeper_san.myshoes.helper.SettingHelper;
 import creeper_san.myshoes.helper.UrlHelper;
 
 public class MainActivity extends BaseActivity implements BottomNavigationBar.OnTabSelectedListener, ServiceConnection {

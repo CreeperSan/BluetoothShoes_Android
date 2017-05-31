@@ -73,6 +73,7 @@ import creeper_san.myshoes.helper.ChatDatabaseHelper;
 import creeper_san.myshoes.helper.ConfigPrefHelper;
 import creeper_san.myshoes.helper.ConnectionHelper;
 import creeper_san.myshoes.helper.NetworkHelper;
+import creeper_san.myshoes.helper.SettingHelper;
 import creeper_san.myshoes.helper.UrlHelper;
 import creeper_san.myshoes.helper.UserDatabaseHelper;
 import creeper_san.myshoes.helper.WeatherHelper;
@@ -136,6 +137,10 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
     private GetShoesInfoThread shoesInfoThread;
     private boolean isBluetoothConnect = false;
     private boolean isWeightOverValue = false;
+    private boolean isLighting = false;
+    private int prevWeight = 0;
+    private int autoLightOffLeft = 10;
+    private int autoLightOnLeft = 2;
 
     /**
      *      收到消息
@@ -144,12 +149,14 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
     public void onMessageReceive(String msg) {
         recBuffer.append(msg);
         String tempStr = recBuffer.toString();
+        log("收到 "+msg);
         if (tempStr.contains("<") && tempStr.contains(">")){
             int start = tempStr.lastIndexOf("<")+1;
             int end = tempStr.lastIndexOf(">");
             if (end<recBuffer.length() && end>start){
                 String receive = tempStr.substring(start,end);
                 recBuffer = new StringBuffer(recBuffer.substring(end+1));
+//                log("原始信息 "+receive);
                 String humidityStr = receive.substring(0,3);
                 String temperatureStr = receive.substring(4,7);
                 String weightStr = receive.substring(8,13);
@@ -159,6 +166,22 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
 
                 //处理体重60800 -  65520
                 mWeight = handleWeight(weightStr);
+                //查看是否需要开灯
+                if (mWeight>30){
+                    if (SettingHelper.getInstance(this).isNeedAutoLight()){
+                        Calendar calendar = Calendar.getInstance();
+                        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                        if (hour>23 || hour<5){
+                            if (!isLighting){
+                                connectionHelper.send("1");
+                            }
+                        }else {
+                            if (isLighting){
+                                connectionHelper.send("2");
+                            }
+                        }
+                    }
+                }
                 //发送消息
                 postEvent(new HumidityEvent(mHumidity));
                 postEvent(new TemperatureEvent(mTemperature));
@@ -176,6 +199,11 @@ public class ShoesService extends Service implements ConnectionHelper.MessageLis
         }
         float unit = 60/weight60;
         int weight = (int) (unit*weightTemp);
+        if (weight - prevWeight > 50){
+            prevWeight = weight;
+            return weight;
+        }
+        prevWeight = weight;
         if (weight>30){
             isWeightOverValue = true;
         }else {

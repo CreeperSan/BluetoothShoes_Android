@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:title="晚上自动照明"
+        android:summaryOn="在23:00-5:00将会感应自动照明"
+        android:summaryOff="已关闭"
+        android:key="isNeedAutoLight"/>
+</PreferenceScreen>
